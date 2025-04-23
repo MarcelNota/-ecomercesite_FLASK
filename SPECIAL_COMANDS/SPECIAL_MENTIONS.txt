@@ -1,0 +1,18 @@
+0. # No Windows                para ativar ambiente virtual(dentro da pasta do projeto)
+.venv\Scripts\activate
+
+# No Linux/macOS
+source .venv/bin/activate      para ativar ambiente virtual(dentro da pasta do projeto)
+
+
+1. pip install -r requirements.txt  ==============   (baixa os requirements escritos no arquivo em questao)
+
+2. pip install --upgrade -r requirements.txt  ========== (para atualizar requirements)
+
+3. flask shell ========== para entrar no shell do python
+
+4. db.create.all()  ===============  para criar uma instancia (database) com os valores que definimos na modelagem
+
+5. db.session.commit() =========== para efectivar as mudancas na database
+
+6. exit()  ======== para sair da sessao
