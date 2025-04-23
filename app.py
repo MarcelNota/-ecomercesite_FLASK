@@ -11,10 +11,10 @@ db = SQLAlchemy(app)
 # Database Modelatiion
 
 class Product(db.Model):
-    id = db.Colum(db.Integer , primary_key=True)
-    name = db.Colum(db.String(120) , nullable=False)
-    price = db.Colum(db.Float , nullable=False)
-    description = db.Colum(db.Text , nullable=True)
+    id = db.Column(db.Integer , primary_key=True)
+    name = db.Column(db.String(120) , nullable=False)
+    price = db.Column(db.Float , nullable=False)
+    description = db.Column(db.Text , nullable=True)
      
 
 # Routes (Root route/ Initial page)
