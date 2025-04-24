@@ -1,6 +1,6 @@
 # Importing
 
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -18,7 +18,15 @@ class Product(db.Model):
      
 
 # Routes (Root route/ Initial page)
-
+@app.route('/api/products/add', methods=["POST"])
+def add_product():
+    data = request.json  # input sent by client
+    if 'name' and 'price' in data:
+        product = Product(name=data.get("name" , "Name not found"), price=data.get("price" , "Price not found"), description=data.get("description" , "Description not found"))    # to catch what the cllient typed (keys and values) ex: "name":"tv"
+        db.session.add(product) # opens session and adds product
+        db.session.commit()
+        return "PRODUCT ADDED SUCCESSFULY"            # 2 ways of getting client data 1st name=data["name"]
+    return jsonfy({"message":"INVALID PRODUCT DATA"}) # and name=data.get("name", "ERROR MESSAGE")
 @app.route('/')
 def welcome():
     return 'Bem Vindo'

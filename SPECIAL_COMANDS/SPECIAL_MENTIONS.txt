@@ -16,3 +16,14 @@ source .venv/bin/activate      para ativar ambiente virtual(dentro da pasta do p
 5. db.session.commit() =========== para efectivar as mudancas na database
 
 6. exit()  ======== para sair da sessao
+
+7. No postman criar variavel de ambiente (nome da API e onde ela roda LOCAL)
+   no campo "variable" dar nome de "baseUrl" (o nome da base do metodo 
+   baseUrl/POS..baseUrl/GET..baseUrl/PUT..baseUrl/DELETE), o "initial value"
+   e o host (http://127.0.0.1:5000), depois no metodo post ir ao canto direito
+   e ativar a "API_Ecomerce LOCAL" nesse caso escolher a api para uso.
+
+8. Sempre que quiser testar no POSTMAN certifique se de correr o servidor do 
+   flask, (o triangulo a direita no vsCode, ou play button)
+
+   
