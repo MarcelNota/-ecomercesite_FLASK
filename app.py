@@ -48,7 +48,19 @@ def delete_Product(product_id):
              # 2 ways of getting client data 1st name=data["name"]
              # and name=data.get("name", "ERROR MESSAGE")
 
-
+@app.route("/api/products/<int:product_id>", methods=["GET"])
+def get_product_details(product_id):
+    product = Product.query.get(product_id)
+    if product:
+        return jsonify({
+            "id": product.id,        # it could be "product_id" : product.id , but since we have specified the route it can be writen as "id": product.id
+            "name": product.name,
+            "price": product.price,
+            "description": product.description
+        })
+    return jsonify({"message": "PRODUCT NOT FOUND"}), 404
+    
+    
 @app.route('/')
 def welcome():
     return 'Bem Vindo'
