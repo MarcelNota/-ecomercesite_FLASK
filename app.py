@@ -2,12 +2,14 @@
 
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecomerce.db'
 
 db = SQLAlchemy(app)
-
+CORS(app)
 # Database Modelatiion
 
 class Product(db.Model):
@@ -18,13 +20,13 @@ class Product(db.Model):
      
 
 # Routes (Root route/ Initial page)
-@app.route('/api/products/add', methods=["POST"])
+@app.route('/api/products/add', methods=["POST"])  # para adicionar produtos
 def add_product():
     data = request.json  # input sent by client
     if 'name' in data and 'price' in data:
         product = Product(name=data.get("name" , "Name not found"), price=data.get("price" , "Price not found"), description=data.get("description" , "Description not found"))    # to catch what the cllient typed (keys and values) ex: "name":"tv"
         db.session.add(product) # opens session and adds product
-        db.session.commit()
+        db.session.commit()     # puts the record on the database  
         return jsonify({"message" : "PRODUCT ADDED SUCCESSFULY" }) 
     return jsonify({"message" : "INVALID PRODUCT DATA"}), 400  # 400 is code error for invalid inserted data                                                             
                                   
@@ -38,17 +40,17 @@ def delete_Product(product_id):
      
     product = Product.query.get(product_id)
     if product:                               # it could be (product != None:)
-        db.session.delete(product)
-        db.session.commit()
+        db.session.delete(product)            # opens session and deletes product
+        db.session.commit()                   # puts the record on the database
         return jsonify({"message" : "PRODUCT DELETED SUCCESSFULY" }) 
-    return jsonify({"message" : "PRODUCT NOT FOUND IN DATABASE"}), 404  # 404 is code error for not found data
+    return jsonify({"message" : "PRODUCT NOT FOUND IN DATABASE"}), 404            # 404 is code error for not found data
     
     
                                                                   
              # 2 ways of getting client data 1st name=data["name"]
              # and name=data.get("name", "ERROR MESSAGE")
 
-@app.route("/api/products/<int:product_id>", methods=["GET"])
+@app.route("/api/products/<int:product_id>", methods=["GET"])   # para pegar produtos por id
 def get_product_details(product_id):
     product = Product.query.get(product_id)
     if product:
@@ -59,7 +61,42 @@ def get_product_details(product_id):
             "description": product.description
         })
     return jsonify({"message": "PRODUCT NOT FOUND"}), 404
+
+@app.route("/api/products/update/<int:product_id>", methods=["PUT"])  # para actualizar os produtos
+def update_product(product_id):
+    product = Product.query.get(product_id)
+    if not product:
+        return jsonify({"message": "PRODUCT NOT FOUND"}), 404
     
+    data = request.json
+    if "name" in data:
+        product.name = data['name']
+        
+    if "price" in data:
+        product.price = data['price']
+        
+    if "description" in data:
+        product.description = data['description']        
+    
+    db.session.commit()           # to store the record at the database      
+                                  # at POST and DELETE we use "db.session.add/delete" to retrieve or delete at the database
+    return jsonify({"message": "PRODUCT SUCCESFULLY UPDATED"}), 200 #putting the "200" at the end is optional
+
+@app.route("/api/products", methods = ["GET"])       # para listar todos produtos
+def get_products():
+    products = Product.query.all()                  # products(in plural) because its a list
+    product_list = []
+    for product in products:
+        product_data = {
+            "id": product.id,                       # it could be "product_id" : product.id , but since we have specified the route it can be writen as "id": product.id
+            "name": product.name,
+            "price": product.price,
+        }
+        product_list.append(product_data)
+    
+    return jsonify(product_list)
+    
+# Rota da pagina inicial    
     
 @app.route('/')
 def welcome():
