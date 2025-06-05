@@ -3,14 +3,32 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-
+from flask_login import UserMixin, login_user, LoginManager , login_required , logout_user        #para autenticacao de usuarios, login required para protecao de rotas(exigencia de autenticacao para uso das mesmas)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = "TAYLAN#333"                              # chave secreta para o Login_manager gerenciar e obrigatorio, NO POSTMAN IR AO HEADERS E VER SESSAO DE COOKIES (NO CAMPO DE TESTE DA ROTA LOGIN)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecomerce.db'
 
+
+login_manager = LoginManager()
 db = SQLAlchemy(app)
+login_manager.init_app(app)                         # para receber a aplicacao
+login_manager.login_view = 'login'                          # usar nome da rota do login que e '/login' mas sem por a barra e aspas (login)
 CORS(app)
+
 # Database Modelatiion
+# User (id, username, password)
+# open terminal (flask shell), (db.drop_all()-> limpa todo banco de dados para sua recriacao), (db.create_all() ->pega toda modelagem e transforma em tabelas ), (db.session.commit()-> armazena conexao com banco ), (db.session.commit()-> session armazena conexao com banco, commit torna efectiva as mudancas ) ) , exit()
+
+class User (db.Model, UserMixin):
+    id = db.Column(db.Integer , primary_key=True)
+    username = db.Column(db.String(80), nullable=False, unique = True)
+    password = db.Column(db.String(80), nullable=False)
+    
+
+# Database Modelatiion
+# Product (id, name, price, description)
+# open terminal (flask shell), (db.create_all()->pega toda modelagem e transforma em tabelas ), (db.session.commit()-> armazena conexao com banco ), (db.session.commit()-> session armazena conexao com banco, commit torna efectiva as mudancas ), exit()
 
 class Product(db.Model):
     id = db.Column(db.Integer , primary_key=True)
@@ -18,9 +36,37 @@ class Product(db.Model):
     price = db.Column(db.Float , nullable=False)
     description = db.Column(db.Text , nullable=True)
      
+     
+     
+# Autenticacao
+# Funcao para controlar rotas protegidas, sempre que houver requisicoes em rotas protegidas, deve por no inicio de todas rotas protegidas
 
-# Routes (Root route/ Initial page)
+@login_manager.user_loader                   # Funcao para controlar rotas protegidas, sempre que houver requisicoes em rotas protegidas, deve por no inicio de todas rotas protegidas
+def load_user(user_id):
+    return User.query.get(int(user_id))      # get(int(user_id)) normally the get() belongs to String class, it comes as a String, so we converted it to int because (user_id) is int
+
+
+@app.route('/login', methods=["POST"])
+def login():
+    data = request.json                # input sent by client
+   # data.get("username")     podia ser data["username"], mas nao e viavel pois a excecao aparece no body, pode falhar encontrar o dado
+    user = User.query.filter_by(username = data.get("username")).first()      # em norma o filtro e feito por id, aqui podemos fazer filtro por outra coisa , beste caso por username, sem o FIRST ele daria a lista de usuarios, mas como existe o FIRST ele dars apenas o 1o user
+    
+    if user and data.get("password") == user.password:
+                login_user(user)                                              # metodo importado acima
+                return jsonify({"message" : "PRODUCT ADDED SUCCESSFULY" })
+    return jsonify({"message" : "UNAUTHORIZED USER, INVALID CREDENTIALS" }) , 401
+
+
+@app.route('/logout', methods=["POST"])
+@login_required                                    # obriga autenticacao para uso desta rota
+def logout():
+    logout_user()                                  # nao precisa de passar user por parametro
+    return jsonify({"message" : "LOGOUT SUCCESSFULY" })
+
+
 @app.route('/api/products/add', methods=["POST"])  # para adicionar produtos
+@login_required                                    # obriga autenticacao para uso desta rota
 def add_product():
     data = request.json  # input sent by client
     if 'name' in data and 'price' in data:
@@ -32,6 +78,7 @@ def add_product():
                                   
                                   
 @app.route("/api/products/delete/<int:product_id>", methods=["DELETE"]) # dentro de <tipoDado e o nomeVariavel> , aspas podem ser duplos como simples
+@login_required                                    # obriga autenticacao para uso desta rota
 def delete_Product(product_id):
     # retrieve product from database
     # verify if it exists
@@ -63,6 +110,7 @@ def get_product_details(product_id):
     return jsonify({"message": "PRODUCT NOT FOUND"}), 404
 
 @app.route("/api/products/update/<int:product_id>", methods=["PUT"])  # para actualizar os produtos
+@login_required                                    # obriga autenticacao para uso desta rota
 def update_product(product_id):
     product = Product.query.get(product_id)
     if not product:
@@ -96,7 +144,7 @@ def get_products():
     
     return jsonify(product_list)
     
-# Rota da pagina inicial    
+# Routes (Root route/ Initial page)    
     
 @app.route('/')
 def welcome():
