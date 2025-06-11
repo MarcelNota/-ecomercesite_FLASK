@@ -24,7 +24,7 @@ class User (db.Model, UserMixin):
     id = db.Column(db.Integer , primary_key=True)
     username = db.Column(db.String(80), nullable=False, unique = True)
     password = db.Column(db.String(80), nullable=False)
-    
+    cart = db.relationship('CartItem', backref='user', lazy= True)     # db.relation to vinculate user and cart (CartItem) is the relation between the tables, lazy is to limitate the fetch of data on (user) 
 
 # Database Modelatiion
 # Product (id, name, price, description)
@@ -36,7 +36,14 @@ class Product(db.Model):
     price = db.Column(db.Float , nullable=False)
     description = db.Column(db.Text , nullable=True)
      
-     
+  
+  
+class CartItem(db.Model):
+    id = db.Column(db.Integer , primary_key=True)                                       # id of the chart
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)           # picking up the id from user table (here it becomes foreign key)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)     # picking up the id from product table (here it becomes foreign key)
+    
+       
      
 # Autenticacao
 # Funcao para controlar rotas protegidas, sempre que houver requisicoes em rotas protegidas, deve por no inicio de todas rotas protegidas
