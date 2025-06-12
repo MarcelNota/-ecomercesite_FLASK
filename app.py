@@ -3,7 +3,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_login import UserMixin, login_user, LoginManager , login_required , logout_user        #para autenticacao de usuarios, login required para protecao de rotas(exigencia de autenticacao para uso das mesmas)
+from flask_login import UserMixin, login_user, LoginManager , login_required , logout_user , current_user       #para autenticacao de usuarios, login required para protecao de rotas(exigencia de autenticacao para uso das mesmas)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "TAYLAN#333"                              # chave secreta para o Login_manager gerenciar e obrigatorio, NO POSTMAN IR AO HEADERS E VER SESSAO DE COOKIES (NO CAMPO DE TESTE DA ROTA LOGIN)
@@ -25,8 +25,11 @@ class User (db.Model, UserMixin):
     username = db.Column(db.String(80), nullable=False, unique = True)
     password = db.Column(db.String(80), nullable=False)
     cart = db.relationship('CartItem', backref='user', lazy= True)     # db.relation to vinculate user and cart (CartItem) is the relation between the tables, lazy is to limitate the fetch of data on (user) 
+                                                                       # note: it is at logical level it will not be reflected as a table
+                                                                       # we created at User model because it is the user who adds the products
 
-# Database Modelatiion
+
+# Database Modelatiion  
 # Product (id, name, price, description)
 # open terminal (flask shell), (db.create_all()->pega toda modelagem e transforma em tabelas ), (db.session.commit()-> armazena conexao com banco ), (db.session.commit()-> session armazena conexao com banco, commit torna efectiva as mudancas ), exit()
 
@@ -151,11 +154,24 @@ def get_products():
     
     return jsonify(product_list)
     
-# Routes (Root route/ Initial page)    
+# Routes for cart
+
+@app.route("/api/cart/add/<int:product_id>", methods=["POST"])
+@login_required 
+def add_to_cart(product_id):                 # need to have user and product
+    user = User.query.get(int(current_user.id))   # to get the current user logged    
     
-@app.route('/')
-def welcome():
-    return 'Bem Vindo'
+    product = Product.query.get(product_id)
+    
+    if user and product:                         # same as IF USER AND PRODUCT EXIST
+        cart_item = CartItem(user_id=user.id , product_id=product.id)
+        db.session.add(cart_item)
+        db.session.commit()
+        return jsonify({'message': 'ITEM ADDED TO THE CHART SUCESSFULLY'}), 200 # THE 200 CODE IS OPTIONAL
+        return jsonify({'message': 'FAILED TO ADD ITEM TO THE CHART '}), 400 # THE 200 CODE IS OPTIONAL
+    return 
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
