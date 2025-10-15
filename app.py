@@ -64,8 +64,10 @@ def login():
     
     if user and data.get("password") == user.password:
                 login_user(user)                                              # metodo importado acima
-                return jsonify({"message" : "PRODUCT ADDED SUCCESSFULY" })
+                return jsonify({"message" : "YOU HAVE SUCCESSFULY LOGGED IN" })
     return jsonify({"message" : "UNAUTHORIZED USER, INVALID CREDENTIALS" }) , 401
+
+
 
 
 @app.route('/logout', methods=["POST"])
@@ -119,6 +121,8 @@ def get_product_details(product_id):
         })
     return jsonify({"message": "PRODUCT NOT FOUND"}), 404
 
+
+
 @app.route("/api/products/update/<int:product_id>", methods=["PUT"])  # para actualizar os produtos
 @login_required                                    # obriga autenticacao para uso desta rota
 def update_product(product_id):
@@ -140,6 +144,9 @@ def update_product(product_id):
                                   # at POST and DELETE we use "db.session.add/delete" to retrieve or delete at the database
     return jsonify({"message": "PRODUCT SUCCESFULLY UPDATED"}), 200 #putting the "200" at the end is optional
 
+
+
+
 @app.route("/api/products", methods = ["GET"])       # para listar todos produtos
 def get_products():
     products = Product.query.all()                  # products(in plural) because its a list
@@ -158,7 +165,7 @@ def get_products():
 
 @app.route("/api/cart/add/<int:product_id>", methods=["POST"])
 @login_required 
-def add_to_cart(product_id):                 # need to have user and product
+def add_to_cart(product_id):                      # need to have user and product
     user = User.query.get(int(current_user.id))   # to get the current user logged    
     
     product = Product.query.get(product_id)
@@ -168,10 +175,21 @@ def add_to_cart(product_id):                 # need to have user and product
         db.session.add(cart_item)
         db.session.commit()
         return jsonify({'message': 'ITEM ADDED TO THE CHART SUCESSFULLY'}), 200 # THE 200 CODE IS OPTIONAL
-        return jsonify({'message': 'FAILED TO ADD ITEM TO THE CHART '}), 400 # THE 200 CODE IS OPTIONAL
-    return 
-
-
-
+    return jsonify({'message': 'FAILED TO ADD ITEM TO THE CHART '}), 400 
+   
+   
+    
+@app.route("/api/cart/remove/<int:product_id>", methods=["DELETE"])   #it could be item_id
+@login_required
+def remove_from_chart(product_id):
+    cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id=product_id).first()  #fetchs both user and product info and FIRST() gets the first item found
+    if cart_item:
+        db.session.delete(cart_item)
+        db.session.commit()
+        return jsonify({'message': 'ITEM REMOVED FROM THE CHART SUCESSFULLY'}), 200 # THE 200 CODE IS OPTIONAL
+    return jsonify({'message': 'FAILED TO REMOVE ITEM FROM THE CHART '}), 400 
+    
+    
+    
 if __name__ == "__main__":
     app.run(debug=True)
