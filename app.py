@@ -181,7 +181,7 @@ def add_to_cart(product_id):                      # need to have user and produc
     
 @app.route("/api/cart/remove/<int:product_id>", methods=["DELETE"])   #it could be item_id
 @login_required
-def remove_from_chart(product_id):
+def remove_from_chart(product_id):                                    #produto, usuario = item no carrinho
     cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id=product_id).first()  #fetchs both user and product info and FIRST() gets the first item found
     if cart_item:
         db.session.delete(cart_item)
@@ -190,6 +190,11 @@ def remove_from_chart(product_id):
     return jsonify({'message': 'FAILED TO REMOVE ITEM FROM THE CHART '}), 400 
     
     
+    
+@app.route("/api/car", methods=["GET"])
+@login_required
+def view_cart():
+        
     
 if __name__ == "__main__":
     app.run(debug=True)
