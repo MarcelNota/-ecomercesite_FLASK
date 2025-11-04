@@ -26,4 +26,11 @@ source .venv/bin/activate      para ativar ambiente virtual(dentro da pasta do p
 8. Sempre que quiser testar no POSTMAN certifique se de correr o servidor do 
    flask, (o triangulo a direita no vsCode, ou play button)
 
-   
+==============================================DEPLOYMENT====================================================
+
+AWS 
+
+EC2- PROVISIONAMENTO DE UMA MAQUINA PARA RODAR A API POR TRAS
+CLOUD FORMATION- PARA TER RECEITA DE TUDO QUE VAI SER PROVISIONADO
+S3- PARA ARMAZENAR DADOS
+AMAZON CLOUD WATCH-PARA VER LOGS
